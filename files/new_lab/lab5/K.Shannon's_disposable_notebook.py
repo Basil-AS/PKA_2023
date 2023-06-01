@@ -1,74 +1,90 @@
-import alphabet
+import math
+
+def main():
+    shannon_disposable_pad()
+    #gamma_gost()
 
 
-def gcd(a, b):
-    if b == 0:
-        return a
-    else:
-        return gcd(b, a % b)
+def shannon_disposable_pad():
+    # Алфавит для шифрования/дешифрования
+    alphabet = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ#,.!?:;{ }[]\'\"-1234567890ZXCVBNMA'
 
+    # Получение действия от пользователя (шифрование/дешифрование)
+    action = str(input('Действие (1. encode/2. decode): '))
 
-def encode(text, a, c, t_i):
-    if c % 2 == 0:
-        return "Ошибка, С должно быть четным"
+    # Ввод сообщения для шифрования/дешифрования
+    message = input("Сообщение: ").upper()
 
-    if gcd(c, 32) != 1:
-        return "Ошибка, С должно быть взаимнопростым с 32"
+    # Параметры генератора ПСЧ
+    gamma = []
+    a = int(input('Введите параметр "a" генератора ПСЧ (13): '))
+    c = int(input('Введите параметр "c" генератора ПСЧ (19): '))
+    m = int(input('Введите параметр "m" генератора ПСЧ (64): '))
 
-    if c > 32:
-        return "Ошибка, С не должно больше модуля(32)"
-
-    if t_i > 32:
-        return "Ошибка, t_i не должно больше модуля(32)"
-
-    if a > 32:
-        return "Ошибка, a не должно больше модуля(32)"
+    # Проверки ключевых параметров
+    if math.gcd(c, m) != 1:
+        return print("Неверно введены ключевые параметры c и m")
+    if m % 4 != 0:
+        return print("Ключ m не кратен 4")
+    if c % 2 != 1:
+        return print("Ключ c не является нечётным числом")
     if a % 4 != 1:
-        return "Ошика, остаток от деления A на 4 должен быть равет 1"
+        return print("a mod 4 != 1, необходимо выполнение равенства")
+    lstm = simple_nums(m)
+    b = a - 1
+    lstb = simple_nums(b)
+    for i in lstm:
+        if not i in lstb:
+            return print("b не кратно некоторым простым делителям числа m")
 
-    # if a < 32:
-    #     return "ошибка, меньше 32"
-    # if 0 >= c < 32:
-    #     return "ошибка, меньше 32"
-    # if 0 >= t_i < 32:
-    #     return "ошибка, меньше 32"
+    # Создание гаммы
+    for i in range(len(message)+1):
+        gamma.append("")
+    gamma[0] = int(input('Введите порождающее число генератора ПСЧ (31): '))
+    for i in range(len(message)):
+        gamma[i + 1] = (a * gamma[i] + c) % m
+    gamma = gamma[1::]
+    print('Гамма: ', gamma)
 
-    result = ''
-    for char in text:
-        number = alphabet.get_pos(char)
-        t_i = (a * t_i + c) % 32
-        result += alphabet.get_char((number + t_i) % 32)
-    return result
+    # Шифрование/дешифрование сообщения
+    final = []
+    for i in range(len(message)):
+        final.append(alphabet[((alphabet.index(message[i]) ^ gamma[i]) % m)])
+    result = ''.join(final)
 
+    # Вывод результата
+    if action == "1":
+        return print('Результат шифрования: ', result)
+    if action == '2':
+        return print('Результат расшифровки: ', result)
 
-def decode(text, a, c, t_i):
-    result = ''
-    for char in text:
-        number = alphabet.get_pos(char)
-        t_i = (a * t_i + c) % 32
-        if number > t_i:
-            result += alphabet.get_char(number - t_i)
-        elif number == t_i:
-            result += alphabet.get_char(number)
-        else:
-            result += alphabet.get_char(number + 32 - t_i)
-    return result
+def simple_nums(n):
+    # Функция для нахождения простых чисел до n
+    lst = [2]
+    for i in range(3, n+1, 2):
+        if (i > 10) and (i % 10 == 5):
+            continue
+        for j in lst:
+            if j*j-1 > i:
+                if n % i == 0:
+                    lst.append(i)
+                break
+            if (i % j == 0):
+                break
+            else:
+                if n % i == 0:
+                    lst.append(i)
+    return list(set(lst))
 
+def gamma_gost():
+    action = str(input('Действие (encode/decode): '))
+    message = str(input("Сообщение: "))
 
-# print(encode("отодногопорченогояблокацелыйвоззагниваеттчк", 5, 7, 6))
-# print(decode("утхожтюььцяйжщсщгпшечюлфвгълукънегфтыдааяящ", 5, 7, 6))
-question = input("Выполнить действие (шифровать/дешифоровать): ").lower()
-proverb = input("Введите пословицу: ").lower().replace(" ", "")
-a = int(input("Введите a -> "))
-c = int(input("Введите c -> "))
-t_i = int(input("Введите t_i -> "))
+    # Код, который разбивает сообщение на блоки по 16 символов и добавляет пробелы между блоками
+    array = []
+    for i in range(16, len(message), 16):
+        message[i] = ' ' + message[i]
+    print(message)
 
-if question not in ["шифровать", "дешифоровать"]:
-    print("Неизвестное действие")
-else:
-    if question == "шифровать":
-
-        print("Получаем: ", encode(proverb, a, c, t_i))
-    else:
-        # result = decode(text)
-        print("Получаем: ", decode(proverb, a, c, t_i))
+if __name__ == '__main__':
+    main()

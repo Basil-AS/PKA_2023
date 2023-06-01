@@ -32,11 +32,10 @@ def kv(k, v):
 
 def main():
 
-
-    m = input('Введите текст-хекс: ')  #fedcba9876543210
+    key = input('Введите ключ: ')#"ffeeddccbbaa99887766554433221100f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff"
+    m = input('Введите текст: ')  #fedcba9876543210
     question = input("Выполнить действие (1.шифровать/2.дешифоровать): ")
-    key = "ffeeddccbbaa99887766554433221100f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff"
-
+    
     enc = encrypt(m, key)
     dec = decrypt(m, key)
 
